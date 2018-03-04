@@ -11,6 +11,8 @@
 #import "LoadingManager.h"
 #import "UIColor+Categories.h"
 #import "CustomAlertView.h"
+#import "AttendanceViewController.h"
+#import "SessionViewController.h"
 
 static BOOL isAlertDisplayed = NO;
 
@@ -130,7 +132,15 @@ static BOOL isAlertDisplayed = NO;
         self.btnLeft.frame = CGRectMake(0, 0, 44, 44);
         [self.btnLeft addTarget:self action:@selector(tappedAtLeftButton:) forControlEvents:UIControlEventTouchUpInside];
         NSString *leftImageName = @"";
-        if ([self isKindOfClass:[CourseListViewController class]]) {
+        
+        NSInteger role = [[[UserManager userCenter] getCurrentUser].role_id integerValue];
+        BOOL isMenuScreen ;
+        if(role == TEACHER)
+            isMenuScreen = [self isKindOfClass:[CourseListViewController class]];
+        else
+            isMenuScreen = [self isKindOfClass:[AttendanceViewController class]];
+                            
+        if (isMenuScreen) {
             leftImageName = @"icon_nav_menu";
         }
         else
@@ -139,7 +149,21 @@ static BOOL isAlertDisplayed = NO;
         self.btnLeft.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         
         UIBarButtonItem *leftItem = [[UIBarButtonItem alloc] initWithCustomView:self.btnLeft];
+        
         self.navigationItem.leftBarButtonItem = leftItem;
+        
+        if([self isKindOfClass:[SessionViewController class]]) {
+            if(role == TEACHER) {
+            self.btnRight = [UIButton buttonWithType:UIButtonTypeSystem];
+            self.btnRight.frame = CGRectMake(0, 0, 44, 44);
+            [self.btnRight addTarget:self action:@selector(tappedAtRightButton:) forControlEvents:UIControlEventTouchUpInside];
+            [self.btnRight setTitle:@"Get delegate code" forState:UIControlStateNormal];
+                
+            UIBarButtonItem *rightItem = [[UIBarButtonItem alloc] initWithCustomView:self.btnRight];
+            self.navigationItem.rightBarButtonItem = rightItem;
+            }
+        }
+      
     }
 }
 

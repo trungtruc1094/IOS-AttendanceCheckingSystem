@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CourseModel.h"
 
 OS_ASSUME_NONNULL_BEGIN
 
@@ -30,5 +31,39 @@ typedef void(^ConnectionFailure)(ErrorType errorType, NSString * _Nonnull errorM
 - (void)logout:(ConnectionComplete _Nullable)success
    andFailure:(ConnectionFailure _Nullable)failure;
 
+- (void)getTeachingCourseList:(ConnectionComplete _Nullable)success
+                   andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)getStudyingCourseList:(ConnectionComplete _Nullable)success
+                   andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)getOpeningCourseByTeacher:(ConnectionComplete _Nullable)success
+                       andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)getStudentCourseWithAttendance:(NSString*)attendanceId
+                               success:(ConnectionComplete _Nullable)success
+                            andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)syncAttendanceChecklistWithStudentId:(NSString*)studenId
+                                attendanceId:(NSString*)attendanceId
+                              attendanceType:(NSString*)attendanceType
+                                     success:(ConnectionComplete _Nullable)success
+                                  andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)submitDelegateCodeWithCode:(NSString*)code
+                           success:(ConnectionComplete _Nullable)success
+                        andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)getDelegateCode:(CourseModel*)course success:(ConnectionComplete _Nullable)success
+             andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)createAttendanceCourse:(CourseModel*)course success:(ConnectionComplete _Nullable)success
+andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)finishAttendanceCourseWithId:(NSString*)attendance success:(ConnectionComplete _Nullable)success
+                           andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)cancelAttendanceCourseWithId:(NSString*)attendance success:(ConnectionComplete _Nullable)success
+                          andFailure:(ConnectionFailure _Nullable)failure;
 @end
 OS_ASSUME_NONNULL_END
