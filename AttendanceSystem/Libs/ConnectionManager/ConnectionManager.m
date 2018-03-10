@@ -24,6 +24,10 @@ static NSString *const kGetDelegateCode = @"api/attendance/generate-delegate-cod
 static NSString *const kCreateAttendance = @"api/attendance/create";
 static NSString *const kCancelAttendance = @"api/attendance/delete";
 static NSString *const kFinishAttendance = @"api/attendance/close";
+static NSString *const kChangePassword = @"api/user/change-password";
+static NSString *const kGenerateQRCode = @"api/check-attendance/qr-code/%@";
+static NSString *const kForgotPassword = @"authenticate/forgot-password";
+
 //Header
 static NSString *kHeaderSourceHostKey = @"X-SOURCE-HOST";
 static NSString *kHeaderTokenKey = @"Token";
@@ -506,6 +510,85 @@ NSString *linkService(NSString *subLink) {
      ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
          [self handleResponseError:error andFailure:failure];
      }];
+}
+
+- (void)changePasswordWithCurrentPassword:(NSString *)current newPassword:(NSString *)newPassword success:(ConnectionComplete)success andFailure:(ConnectionFailure)failure {
+    
+    NSString* token = [[UserManager userCenter] getCurrentUserToken];
+    NSDictionary *parameter = @{@"token": token ? token : @"",
+                                @"current_password":current,
+                                @"confirm_password":newPassword,
+                                @"new_password":newPassword
+                                };
+    
+    NSString* url = linkService(kChangePassword);
+    NSLog(@"url : %@" ,url);
+    NSLog(@"parameter : %@" , parameter);
+    
+    [self.sessionManager POST:url
+                   parameters:parameter
+                     progress:nil
+                      success:
+     ^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+         [self handleResponseData:responseObject andSuccess:success];
+     }
+                      failure:
+     ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+         [self handleResponseError:error andFailure:failure];
+     }];
+}
+
+- (NSString*)getQRCodeText:(NSString *)attendanceId {
+    
+    NSString* url = [NSString stringWithFormat:linkService(kGenerateQRCode),attendanceId];
+    
+    NSLog(@"url : %@" ,url);
+    
+    return url;
+    
+}
+
+- (void)checkAttendanceByQRCodeWithURL:(NSString*)url success:(ConnectionComplete)success andFailure:(ConnectionFailure)failure {
+    
+    NSString* token = [[UserManager userCenter] getCurrentUserToken];
+    NSDictionary *parameter = @{@"token": token ? token : @""
+                                };
+    NSLog(@"url : %@" ,url);
+    
+    [self.sessionManager POST:url
+                   parameters:parameter
+                     progress:nil
+                      success:
+     ^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+         [self handleResponseData:responseObject andSuccess:success];
+     }
+                      failure:
+     ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+         [self handleResponseError:error andFailure:failure];
+     }];
+    
+}
+
+- (void)requestForgetPasswordWithEmail:(NSString *)email success:(ConnectionComplete)success andFailure:(ConnectionFailure)failure {
+    
+//    NSString* token = [[UserManager userCenter] getCurrentUserToken];
+    NSString* url = linkService(kForgotPassword);
+    
+    NSDictionary *parameter = @{@"email": email};
+    NSLog(@"url : %@" ,url);
+    
+    [self.sessionManager POST:url
+                   parameters:parameter
+                     progress:nil
+                      success:
+     ^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+         [self handleResponseData:responseObject andSuccess:success];
+     }
+                      failure:
+     ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+         [self handleResponseError:error andFailure:failure];
+     }];
+    
 }
 
 @end
