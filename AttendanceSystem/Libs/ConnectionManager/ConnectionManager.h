@@ -77,5 +77,17 @@ andFailure:(ConnectionFailure _Nullable)failure;
 - (void)requestForgetPasswordWithEmail:(NSString*)email success:(ConnectionComplete _Nullable)success
                             andFailure:(ConnectionFailure _Nullable)failure;
 
+- (void)sendAbsenceRequestWithReason:(NSString*)reson
+                           startDate:(NSString*)startDate
+                             endDate:(NSString*)endDate
+                             success:(ConnectionComplete _Nullable)success
+                          andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)sendFeedbackRequestWithTitle:(NSString*)title
+                             content:(NSString*)content
+                         isAnonymous:(BOOL)isAnonymous
+                             success:(ConnectionComplete _Nullable)success
+                          andFailure:(ConnectionFailure _Nullable)failure;
+
 @end
 OS_ASSUME_NONNULL_END
