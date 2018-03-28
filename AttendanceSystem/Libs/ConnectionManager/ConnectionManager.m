@@ -8,6 +8,7 @@
 
 #import "ConnectionManager.h"
 #import "AFHTTPSessionManager.h"
+#import "QuestionModel.h"
 
 //Link API
 static NSString *const kLogin = @"authenticate/login";
@@ -29,6 +30,9 @@ static NSString *const kGenerateQRCode = @"api/check-attendance/qr-code/%@";
 static NSString *const kForgotPassword = @"authenticate/forgot-password";
 static NSString *const kSendAbsenceRequest = @"api/absence-request/create";
 static NSString *const kSendFeedbackRequest = @"api/feedback/send";
+static NSString *const kCheckQuizCode = @"api/quiz/check-code";
+static NSString *const kGetQuizList = @"api/quiz/detail";
+static NSString *const kSubmitQuizList = @"api/quiz/submit";
 
 //Header
 static NSString *kHeaderSourceHostKey = @"X-SOURCE-HOST";
@@ -67,7 +71,9 @@ static NSString *const kEndPointLink = @"End point link";
 static NSString *const kXSourceHost = @"X source host";
 
 NSString *linkService(NSString *subLink) {
-    NSString *endPointLink = @"https://iteccyle8.herokuapp.com/"; //[[NSBundle mainBundle] objectForInfoDictionaryKey:kEndPointLink];
+    NSString *endPointLink = @"http://192.168.1.107:3000/";
+   // @"https://iteccyle8.herokuapp.com/";
+    //[[NSBundle mainBundle] objectForInfoDictionaryKey:kEndPointLink];
     
     return [endPointLink stringByAppendingString:subLink];
 }
@@ -637,17 +643,44 @@ NSString *linkService(NSString *subLink) {
                                 @"title" : title,
                                 @"content" : content
                                 };
+    
+    NSMutableDictionary *newDict = [[NSMutableDictionary alloc] init];
+    
     NSInteger userRole = [[[UserManager userCenter] getCurrentUser].role_id integerValue];
     
+    [newDict addEntriesFromDictionary:parameter];
     if(userRole == STUDENT){
         if(isAnonymous)
-            [parameter setValue:@"true" forKey:@"isAnonymous"];
+            [newDict setObject:@"true" forKey:@"isAnonymous"];
         else
-             [parameter setValue:@"false" forKey:@"isAnonymous"];
+             [newDict setObject:@"false" forKey:@"isAnonymous"];
     }
     
     NSLog(@"url : %@" ,url);
-    NSLog(@"parameter : %@",parameter);
+    NSLog(@"parameter : %@",newDict);
+    
+    [self.sessionManager POST:url
+                   parameters:newDict
+                     progress:nil
+                      success:
+     ^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+         [self handleResponseData:responseObject andSuccess:success];
+     }
+                      failure:
+     ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+         [self handleResponseError:error andFailure:failure];
+     }];
+}
+
+- (void)checkQuizCodeWithCode:(NSString *)code success:(ConnectionComplete)success andFailure:(ConnectionFailure)failure {
+    NSString* token = [[UserManager userCenter] getCurrentUserToken];
+    NSDictionary *parameter = @{@"token": token ? token : @"",
+                                @"code": code
+                                };
+    
+    NSString* url = linkService(kCheckQuizCode);
+    NSLog(@"url : %@" ,url);
+    NSLog(@"parameter : %@" , parameter);
     
     [self.sessionManager POST:url
                    parameters:parameter
@@ -660,6 +693,64 @@ NSString *linkService(NSString *subLink) {
      ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
          [self handleResponseError:error andFailure:failure];
      }];
+}
+
+- (void)getQuizListFromId:(NSString *)quizId success:(ConnectionComplete)success andFailure:(ConnectionFailure)failure {
+    NSString* token = [[UserManager userCenter] getCurrentUserToken];
+    NSDictionary *parameter = @{@"token": token ? token : @"",
+                                @"quiz_id": quizId
+                                };
+    
+    NSString* url = linkService(kGetQuizList);
+    NSLog(@"url : %@" ,url);
+    NSLog(@"parameter : %@" , parameter);
+    
+    [self.sessionManager POST:url
+                   parameters:parameter
+                     progress:nil
+                      success:
+     ^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+         [self handleResponseData:responseObject andSuccess:success];
+     }
+                      failure:
+     ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+         [self handleResponseError:error andFailure:failure];
+     }];
+}
+
+- (void)submitQuizListWithId:(NSString *)quizId
+                     student:(NSString *)studentId
+                questionList:(NSArray *)questionList
+                     success:(ConnectionComplete)success
+                  andFailure:(ConnectionFailure)failure {
+    
+    NSString* token = [[UserManager userCenter] getCurrentUserToken];
+    NSDictionary *parameter = @{@"token": token ? token : @"",
+                                @"student_id": studentId
+                                };
+    
+    NSDictionary *quizParam = @{@"id":quizId ,
+                                @"questions":[QuestionModel arrayOfDictionariesFromModels:questionList]
+                                };
+    
+    [parameter setValue:quizParam forKey:@"quiz"];
+    
+    NSString* url = linkService(kSubmitQuizList);
+    NSLog(@"url : %@" ,url);
+    NSLog(@"parameter : %@" , parameter);
+    
+    [self.sessionManager POST:url
+                   parameters:parameter
+                     progress:nil
+                      success:
+     ^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+         [self handleResponseData:responseObject andSuccess:success];
+     }
+                      failure:
+     ^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+         [self handleResponseError:error andFailure:failure];
+     }];
+    
 }
 
 @end

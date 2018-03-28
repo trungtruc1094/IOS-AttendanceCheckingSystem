@@ -39,6 +39,14 @@
     
     self.courseList = [[NSArray alloc] init];
     
+//    [self getCourseList];
+//    
+//    [self setSocket];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
     [self getCourseList];
     
     [self setSocket];
@@ -118,7 +126,9 @@
     
     CourseModel* course = [self.courseList objectAtIndex:indexPath.row];
     
-    if(course.attendance_id && [course.attendance_id isEqualToString:@"0"])
+    NSString* attendance_id = (NSString*)course.attendance_id;
+    
+    if(attendance_id && [attendance_id isEqualToString:@"0"])
     {
         [self showAlertQuestionWithMessage:@"Create New Course" completion:^(NSInteger buttonIndex) {
             if(buttonIndex == 1) {
