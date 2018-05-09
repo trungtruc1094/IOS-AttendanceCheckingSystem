@@ -83,11 +83,11 @@ andFailure:(ConnectionFailure _Nullable)failure;
                              success:(ConnectionComplete _Nullable)success
                           andFailure:(ConnectionFailure _Nullable)failure;
 
-- (void)sendFeedbackRequestWithTitle:(NSString*)title
-                             content:(NSString*)content
+- (void)sendFeedbackRequestWithTitle:(NSString *)title
+                             content:(NSString *)content
                          isAnonymous:(BOOL)isAnonymous
-                             success:(ConnectionComplete _Nullable)success
-                          andFailure:(ConnectionFailure _Nullable)failure;
+                             success:(ConnectionComplete)success
+                          andFailure:(ConnectionFailure)failure;
 
 - (void)checkQuizCodeWithCode:(NSString*)code
                       success:(ConnectionComplete _Nullable)success
@@ -102,6 +102,36 @@ andFailure:(ConnectionFailure _Nullable)failure;
                 questionList:(NSArray*)questionList
                      success:(ConnectionComplete _Nullable)success
                   andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)getPublishQuiz:(NSString*)quizCode
+               success:(ConnectionComplete _Nullable)success
+            andFailure:(ConnectionFailure _Nullable)failure;
+
+- (void)getQuizListFromId:(NSString *)courseId
+                  classId:(NSString*)classId
+                  success:(ConnectionComplete)success
+               andFailure:(ConnectionFailure)failure;
+
+- (void)startQuizWithId:(NSString*)quizId
+                success:(ConnectionComplete)success
+             andFailure:(ConnectionFailure)failure;
+
+
+- (void)getDisplayQuizWithSuccess:(ConnectionComplete)success
+andFailure:(ConnectionFailure)failure;
+
+- (void)getStudentDetailWithId:(NSString*)studentId success:(ConnectionComplete)success
+                         andFailure:(ConnectionFailure)failure;
+
+- (void)uploadFaceForStudent:(NSString*)personId
+                      faceId:(NSString*)faceId
+                   faceImage:(NSString*)url
+                     success:(ConnectionComplete)success
+                  andFailure:(ConnectionFailure)failure;
+
+- (void)uploadImageToAPI:(NSData*)imageData
+                 success:(ConnectionComplete)success
+              andFailure:(ConnectionFailure)failure;
 
 @end
 OS_ASSUME_NONNULL_END

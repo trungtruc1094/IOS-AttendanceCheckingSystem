@@ -13,7 +13,9 @@
 #import "REFrostedViewController.h"
 #import "QRCodeViewController.h"
 #import "ScanQRViewController.h"
-#import "StudentQuizViewController.h"
+#import "StudentQuizDetailViewController.h"
+#import "TeacherQuizViewController.h"
+#import "MPOPersonFacesController.h"
 
 @import SocketIO;
 
@@ -130,6 +132,35 @@ typedef enum {
 - (IBAction)didTouchQuiz:(id)sender {
     if(self.userRole == TEACHER) {
         [self.socket disconnect];
+        [self showLoadingView];
+        
+        NSString* classId = self.course.classId;
+        NSString* courseId = self.course.courseId;
+        
+        [[ConnectionManager connectionDefault] getQuizListFromId:courseId classId:classId
+                                                         success:^(id  _Nonnull responseObject) {
+                                                             [self hideLoadingView];
+                                                             NSString* result = responseObject[@"result"];
+                                                             NSArray* quizList = responseObject[@"quiz_list"];
+                                                             
+                                                             if([result isEqualToString:@"success"]) {
+                                                           if(quizList && quizList.count > 0)
+                                                           {
+                                                               TeacherQuizViewController * quiz = [self.storyboard instantiateViewControllerWithIdentifier:@"TeacherQuizViewController"];
+                                                             quiz.course = self.course;
+                                                            
+                                                             [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:quiz animated:TRUE];
+                                                             }
+                                                                 else
+                                                                     [self showAlertQuestionWithMessage:@"Attendance quiz haven't been opened yet" completion:nil];
+                                                             }
+                                                             else
+                                                                 [self showAlertQuestionWithMessage:@"Attendance quiz haven't been opened yet" completion:nil];
+                                                         } andFailure:^(ErrorType errorType, NSString * _Nonnull errorMessage, id  _Nullable responseObject) {
+                                                             [self hideLoadingView];
+                                                             [self showAlertQuestionWithMessage:errorMessage completion:nil];
+                                                         }];
+   
     }
     else {
         [self showAlertView:QUIZ];
@@ -371,16 +402,35 @@ typedef enum {
             return;
         }
         
-        NSInteger quiz_id = [responseObject[@"quiz_id"] integerValue];
+//        NSInteger quiz_id = [responseObject[@"quiz_id"] integerValue];
         //StudentQuizViewController
-        StudentQuizViewController* studentQuiz = [self.storyboard instantiateViewControllerWithIdentifier:@"StudentQuizViewController"];
-        studentQuiz.quiz_id = quiz_id;
+        StudentQuizDetailViewController* studentQuiz = [self.storyboard instantiateViewControllerWithIdentifier:@"StudentQuizDetailViewController"];
+//        studentQuiz.quiz_id = quiz_id;
+        studentQuiz.quiz_id = code;
         [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:studentQuiz animated:TRUE];
             
     } andFailure:^(ErrorType errorType, NSString * _Nonnull errorMessage, id  _Nullable responseObject) {
         [self hideLoadingView];
         [self showAlertNoticeWithMessage:errorMessage completion:nil];
     }];
+}
+- (IBAction)didTouchFaceDetection:(id)sender {
+    
+    if(self.userRole == TEACHER) {
+    
+    }
+    else {
+        GroupPerson* person = [[GroupPerson alloc] init];
+        person.personId = @"124ae091-3ab4-454e-913c-cde9eecca950";
+        
+        PersonGroup* group = [[PersonGroup alloc] init];
+        group.groupId = @"hcmus-test";
+        
+        MPOPersonFacesController * controller = [[MPOPersonFacesController alloc] initWithGroup:group andPerson:person];
+//        controller.needTraining = * NO ;
+        [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:controller animated:YES];
+    }
+    
 }
 
 
