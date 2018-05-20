@@ -28,7 +28,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    self.title = @"SEND FEEDBACK TO STUDENT";
+    self.title = @"SEND FEEDBACK";
     
     self.userRole = [[[UserManager userCenter] getCurrentUser].role_id integerValue];
     
