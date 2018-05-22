@@ -20,6 +20,8 @@
 #import "AttendanceViewController.h"
 #import "SendAbsenceViewController.h"
 #import "SendFeedbackViewController.h"
+#import "MPOPersonFacesController.h"
+#import "StudentScheduleViewController.h"
 
 static CGFloat const kCellHeightRatio = 60.0f/667.0f;
 static CGFloat kCellHeight;
@@ -103,12 +105,18 @@ static CGFloat kCellHeight;
                                                           imageNameSelected:@"icon_nav_menu"
                                                         imageNameUnselected:@"icon_nav_menu"];
     
+    MenuItemModel *uploadFaces = [[MenuItemModel alloc] initWithName:@"Upload Faces"
+                                                                       type:MenuItemType_UploadFaces
+                                                          imageNameSelected:@"icon_nav_menu"
+                                                        imageNameUnselected:@"icon_nav_menu"];
+    
     if([[[UserManager userCenter] getCurrentUser].role_id integerValue] == STUDENT) {
         self.items = @[attendance,
                        sendFeeback,
                        sendAbsenceRequest,
                        schedules,
                        account,
+                       uploadFaces,
                        about,
                        logout];
     }
@@ -192,6 +200,11 @@ static CGFloat kCellHeight;
             break;
             
         case MenuItemType_Schedules:
+        {
+            StudentScheduleViewController* absence = [self.storyboard instantiateViewControllerWithIdentifier:@"StudentScheduleViewController"];
+            [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:absence animated:TRUE];
+        }
+            
             break;
             
         case MenuItemType_Account: {
@@ -207,6 +220,21 @@ static CGFloat kCellHeight;
             break ;
         case MenuItemType_Logout:
             [self showLogoutAlert];
+            break;
+        
+        case MenuItemType_UploadFaces:
+            {
+            GroupPerson* person = [[GroupPerson alloc] init];
+            person.personId = [[UserManager userCenter] getCurrentUser].person_id;
+            
+            PersonGroup* group = [[PersonGroup alloc] init];
+            group.groupId = GROUP;
+            
+            MPOPersonFacesController * controller = [[MPOPersonFacesController alloc] initWithGroup:group andPerson:person];
+            //        controller.needTraining = * NO ;
+            [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:controller animated:YES];
+            }
+            
             break;
         default:
             break;
@@ -230,9 +258,10 @@ static CGFloat kCellHeight;
                                                 andFailure:
               ^(ErrorType errorType, NSString * _Nonnull errorMessage, id  _Nullable responseObject) {
                   [self hideLoadingView];
-                  if ([errorMessage length] > 0) {
-                      [self showAlertNoticeWithMessage:errorMessage completion:nil];
-                  }
+                  [[UserManager userCenter] setCurrentUserToken:@""];
+                  [self gotoSignInScreen];
+                  [self showAlertNoticeWithMessage:errorMessage completion:nil];
+                  
               }];
          }
      }];

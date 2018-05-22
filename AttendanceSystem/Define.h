@@ -25,5 +25,11 @@
 #define SERVER_ERROR_MSG @"Internal server error";
 
 #define HOST @"https://iteccyle8.herokuapp.com/";
+//@"http://172.16.6.135:3000/";
+//
+//
+
+#define GROUP @"hcmus-face";
+
 
 #endif /* Define_h */

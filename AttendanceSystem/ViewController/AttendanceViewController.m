@@ -16,15 +16,9 @@
 #import "StudentQuizDetailViewController.h"
 #import "TeacherQuizViewController.h"
 #import "MPOPersonFacesController.h"
+#import "MPOVerificationViewController.h"
 
 @import SocketIO;
-
-typedef enum {
-    CHECK_LIST ,
-    QR_CODE ,
-    QUIZ
-    
-}AttendanceType;
 
 @interface AttendanceViewController ()<UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
@@ -46,6 +40,7 @@ typedef enum {
 @property (nonatomic) NSArray *titleList;
 
 @property (nonatomic) NSMutableArray *valueList;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *ctrFaceHeight;
 
 @end
 
@@ -73,6 +68,8 @@ typedef enum {
         self.titleList = @[@"Total",@"Present",@"Absence"];
         self.valueList = [[NSMutableArray alloc] init];
         
+        self.ctrFaceHeight.constant = 40 ;
+        
     }
     else {
         self.title = @"ATTENDANCE";
@@ -80,6 +77,8 @@ typedef enum {
         self.ctrCollectionViewHeight.constant = 0;
         self.ctrFinishHeight.constant = 0 ;
         self.ctrCancelHeight.constant = 0 ;
+        
+        self.ctrFaceHeight.constant = 0 ;
     }
 }
 
@@ -137,30 +136,30 @@ typedef enum {
         NSString* classId = self.course.classId;
         NSString* courseId = self.course.courseId;
         
-        [[ConnectionManager connectionDefault] getQuizListFromId:courseId classId:classId
-                                                         success:^(id  _Nonnull responseObject) {
-                                                             [self hideLoadingView];
-                                                             NSString* result = responseObject[@"result"];
-                                                             NSArray* quizList = responseObject[@"quiz_list"];
-                                                             
-                                                             if([result isEqualToString:@"success"]) {
-                                                           if(quizList && quizList.count > 0)
-                                                           {
+//        [[ConnectionManager connectionDefault] getQuizListFromId:courseId classId:classId
+//                                                         success:^(id  _Nonnull responseObject) {
+//                                                             [self hideLoadingView];
+//                                                             NSString* result = responseObject[@"result"];
+//                                                             NSArray* quizList = responseObject[@"quiz_list"];
+//
+//                                                             if([result isEqualToString:@"success"]) {
+//                                                           if(quizList && quizList.count > 0)
+//                                                           {
                                                                TeacherQuizViewController * quiz = [self.storyboard instantiateViewControllerWithIdentifier:@"TeacherQuizViewController"];
                                                              quiz.course = self.course;
                                                             
                                                              [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:quiz animated:TRUE];
-                                                             }
-                                                                 else
-                                                                     [self showAlertQuestionWithMessage:@"Attendance quiz haven't been opened yet" completion:nil];
-                                                             }
-                                                             else
-                                                                 [self showAlertQuestionWithMessage:@"Attendance quiz haven't been opened yet" completion:nil];
-                                                         } andFailure:^(ErrorType errorType, NSString * _Nonnull errorMessage, id  _Nullable responseObject) {
-                                                             [self hideLoadingView];
-                                                             [self showAlertQuestionWithMessage:errorMessage completion:nil];
-                                                         }];
-   
+//                                                             }
+//                                                                 else
+//                                                                     [self showAlertQuestionWithMessage:@"Attendance quiz haven't been opened yet" completion:nil];
+//                                                             }
+//                                                             else
+//                                                                 [self showAlertQuestionWithMessage:@"Attendance quiz haven't been opened yet" completion:nil];
+//                                                         } andFailure:^(ErrorType errorType, NSString * _Nonnull errorMessage, id  _Nullable responseObject) {
+//                                                             [self hideLoadingView];
+//                                                             [self showAlertQuestionWithMessage:errorMessage completion:nil];
+//                                                         }];
+//
     }
     else {
         [self showAlertView:QUIZ];
@@ -417,18 +416,13 @@ typedef enum {
 - (IBAction)didTouchFaceDetection:(id)sender {
     
     if(self.userRole == TEACHER) {
-    
-    }
-    else {
-        GroupPerson* person = [[GroupPerson alloc] init];
-        person.personId = @"124ae091-3ab4-454e-913c-cde9eecca950";
-        
+        MPOVerificationViewController * controller = [self.storyboard instantiateViewControllerWithIdentifier:@"MPOVerificationViewController"];
+        controller.verificationType = VerificationTypeFaceAndPerson;
+        controller.course = self.course;
         PersonGroup* group = [[PersonGroup alloc] init];
-        group.groupId = @"hcmus-test";
-        
-        MPOPersonFacesController * controller = [[MPOPersonFacesController alloc] initWithGroup:group andPerson:person];
-//        controller.needTraining = * NO ;
-        [(UINavigationController*)self.frostedViewController.contentViewController pushViewController:controller animated:YES];
+        group.groupId = GROUP;
+        controller.group = group;
+        [self.navigationController pushViewController:controller animated:YES];
     }
     
 }
